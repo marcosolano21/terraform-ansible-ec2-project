@@ -1,0 +1,10 @@
+---
+prometheus_version: "v3.0.0"
+prometheus_port: 9090
+
+# Paths on Ubuntu EC2
+prometheus_config_dir: "/etc/prometheus"
+prometheus_data_dir: "/var/lib/prometheus"
+
+# Frequency Prometheus will request data from python script
+prometheus_scrape_interval: "5s"

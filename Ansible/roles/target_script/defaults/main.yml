@@ -1,0 +1,5 @@
+---
+target_script_dir: "/opt/stress_script"
+target_script_name: "stress_script.py"
+target_script_user: "ubuntu"
+target_script_service_name: "resource-stress"

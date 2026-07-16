@@ -1,0 +1,16 @@
+[Unit]
+Description= Stress Simulator (CPU/RAM)
+After=network.target
+
+[Service]
+Type=simple
+User={{ target_script_user }}
+WorkingDirectory={{ target_script_dir }}
+ExecStart=/usr/bin/python3 {{ target_script_dir }}/{{ target_script_name }}
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

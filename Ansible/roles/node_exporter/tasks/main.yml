@@ -1,0 +1,21 @@
+---
+- name: Install the prometheus-node-exporter package
+  apt:
+    name: prometheus-node-exporter
+    state: present
+    update_cache: yes
+
+- name: Deploy the Node Exporter configuration from the template
+  template:
+    src: node-exporter.j2
+    dest: /etc/default/prometheus-node-exporter
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Restart Node Exporter  # <-- Triggers handler if the file changes
+
+- name: Ensure Node Exporter is running and enabled at boot
+  systemd:
+    name: prometheus-node-exporter
+    state: started
+    enabled: yes

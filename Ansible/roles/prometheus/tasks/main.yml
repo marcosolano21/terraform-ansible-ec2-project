@@ -1,0 +1,41 @@
+---
+- name: Ensure the configuration directory exists
+  file:
+    path: "{{ prometheus_config_dir }}"
+    state: directory
+    mode: '0755'
+
+- name: Create the data directory with the correct permissions for the container
+  file:
+    path: "{{ prometheus_data_dir }}"
+    state: directory
+    # 65534 is the user ID (nobody) used by the official Prometheus image
+    owner: "65534"
+    group: "65534"
+    mode: '0755'
+
+- name: Deploy the Prometheus configuration from the template
+  template:
+    src: prometheus.yml.j2
+    dest: "{{ prometheus_config_dir }}/prometheus.yml"
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Start the Prometheus Docker container
+  community.docker.docker_container:
+    name: prometheus
+    image: "prom/prometheus:{{ prometheus_version }}"
+    state: started
+    restart_policy: unless-stopped
+    # Map the host machine's port to the container's port
+    published_ports:
+      - "{{ prometheus_port }}:9090"
+    # Mount the EC2 instance's local directories into the container
+    volumes:
+      - "{{ prometheus_config_dir }}:/etc/prometheus"
+      - "{{ prometheus_data_dir }}:/prometheus"
+    # Startup arguments to tell Prometheus where to read its configuration and store its data
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"

@@ -1,0 +1,23 @@
+---
+# Phase 1: Base preparation for all servers.
+- name: Prepare the base environment on all EC2 instances.
+  hosts: all
+  become: true
+  roles:
+    - common
+
+# Phase 2: Configure the monitoring target (workload generator).
+- name: Configure the Test Server (Target).
+  hosts: target
+  become: true
+  roles:
+    - node_exporter
+    - target_script
+
+# Phase 3: Configure the observability node (Prometheus).
+- name: Configure the Monitoring Server (Prometheus).
+  hosts: monitoring
+  become: true
+  roles:
+    - docker
+    - prometheus

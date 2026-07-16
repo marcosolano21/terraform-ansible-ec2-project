@@ -1,0 +1,46 @@
+---
+- name: Create the directory for the repository's cryptographic keys
+  file:
+    path: /etc/apt/keyrings
+    state: directory
+    mode: '0755'
+
+- name: Download Docker's official GPG key
+  get_url:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    dest: /etc/apt/keyrings/docker.asc
+    mode: '0644'
+
+- name: Add the official Docker repository to the APT sources
+  apt_repository:
+    repo: "deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable" #Variable provided to Ansible by the OS
+    state: present
+    filename: docker
+
+- name: Install Docker Engine and Docker Compose
+  apt:
+    name:
+      - docker-ce # Automatically creates the docker group
+      - docker-ce-cli
+      - containerd.io
+      - docker-buildx-plugin
+      - docker-compose-plugin
+    state: present
+    update_cache: yes
+
+- name: Ensure the Docker service is running and enabled at boot
+  systemd:
+    name: docker
+    state: started
+    enabled: yes
+
+- name: Install the Docker SDK for Python via APT
+  apt:
+    name: python3-docker
+    state: present
+
+- name: Add the ubuntu user to the docker group # Grant the ubuntu user permission to run Docker commands without repeatedly using sudo
+  user:
+    name: ubuntu
+    groups: docker
+    append: yes

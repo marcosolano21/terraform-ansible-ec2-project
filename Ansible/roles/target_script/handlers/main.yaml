@@ -1,0 +1,7 @@
+---
+- name: Restart Target Script
+  systemd:
+    name: "{{ target_script_service_name }}"  
+    state: restarted
+    daemon_reload: yes   # Reloads Systemd in case you also modified the service configuration file.
+  become: true            # Root privileges (sudo) are required to restart Systemd services.

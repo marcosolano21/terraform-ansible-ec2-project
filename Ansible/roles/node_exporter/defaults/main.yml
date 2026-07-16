@@ -1,0 +1,6 @@
+---
+# Default port for Node Exporter will be listening from
+node_exporter_port: 9100
+
+# Additional arguments for Node Exporter
+node_exporter_args: "--web.listen-address=:{{ node_exporter_port }}"

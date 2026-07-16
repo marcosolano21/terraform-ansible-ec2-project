@@ -1,0 +1,19 @@
+---
+- name: Update the APT package cache (equivalent to apt-get update)
+  apt:
+    update_cache: yes
+    cache_valid_time: 3600  # Skip the update if it has already been performed within the last hour
+
+- name: Install essential system packages and Python dependencies
+  apt:
+    name:
+      - curl
+      - git
+      - software-properties-common
+      - python3-pip
+      - python3-apt           # Required for Ansible to manage APT efficiently on Ubuntu
+      - unzip
+      - htop                  # Interactive tool for monitoring CPU and RAM usage from the command line
+      - ca-certificates
+      - gnupg
+    state: present

@@ -1,0 +1,33 @@
+---
+- name: Ensure the script installation directory exists. # If the directory does not exist, Ansible will create it.
+  file:
+    path: "{{ target_script_dir }}"
+    state: directory
+    owner: "{{ target_script_user }}"
+    group: "{{ target_script_user }}"
+    mode: '0755'
+
+- name: Copy the Python script to the EC2 instance.
+  copy:
+    src: "{{ target_script_name }}" # Reads the file name from defaults/main.yml, then looks for the file in the files directory. 
+    dest: "{{ target_script_dir }}/{{ target_script_name }}"
+    owner: "{{ target_script_user }}"
+    group: "{{ target_script_user }}"
+    mode: '0755'
+  notify: Restart Target Script  # <-- THE MAGIC LINK! The name must exactly match the one defined in the Handler.
+
+  
+- name: Deploy the Systemd service file from the template.
+  template:
+    src: stress.service.j2
+    dest: "/etc/systemd/system/{{ target_script_service_name }}.service"
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Reload the Systemd daemon, enable the service, and start the workload service.
+  systemd:
+    name: "{{ target_script_service_name }}"
+    daemon_reload: yes
+    state: started
+    enabled: yes
