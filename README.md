@@ -85,10 +85,10 @@ Important: Once terraform apply completes, copy or note down the Public IPs of t
 
 ```text
 [target]
-_PUBLIC-IP_ ansible_user=ubuntu
+PUBLIC-IP ansible_user=ubuntu
 
 [monitoring]
-_PUBLIC-IP_ ansible_user=ubuntu
+PUBLIC-IP ansible_user=ubuntu
 
 ```
 
