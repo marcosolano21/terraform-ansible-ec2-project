@@ -55,7 +55,9 @@ Unlike traditional stress-testing tools that flatline CPU and RAM at 100% static
         └── tasks/
             └── main.yml
 
-##  Prerequisites
+---
+
+## Prerequisites
 
 Before running this project, ensure you have the following tools and configurations set up on your local control node:
 
@@ -104,3 +106,5 @@ Paste the following PromQL queries into the search bar and click Execute to see 
 
 - To view live RAM Allocation:
 (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / 1024 / 1024 / 1024
+
+---
