@@ -3,7 +3,8 @@
   apt:
     name: prometheus-node-exporter
     state: present
-    update_cache: yes
+    #update_cache: yes
+    install_recommends: no
 
 - name: Deploy the Node Exporter configuration from the template
   template:
