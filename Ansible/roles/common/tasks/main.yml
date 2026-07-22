@@ -1,9 +1,10 @@
 ---
 - name: Update the APT package cache (equivalent to apt-get update)
   apt:
+    cache_valid_time: 86400  # Skip the update if it has already been performed within the last day
     update_cache: yes
     install_recommends: no
-    cache_valid_time: 86400  # Skip the update if it has already been performed within the last day
+    
 
 - name: Install essential system packages and Python dependencies
   apt:
