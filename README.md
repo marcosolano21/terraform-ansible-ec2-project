@@ -115,7 +115,7 @@ PUBLIC-IP ansible_user=ubuntu
 
 ---
 ## CI/CD
-The project also contains a jenkins file for a CI/CD pipeline. These are the stages and their description:
+The project also contains a jenkins file for a CI/CD pipeline. The pipeline starts automatically when a change is made on the repository. These are the stages and their description:
 
 * **1. Code Checkout:**Pulls the latest source code from the GitHub repository into the Jenkins workspace to initiate the pipeline.
 
