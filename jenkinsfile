@@ -2,7 +2,7 @@ pipeline {
     agent any
 
      environment {
-        // Mantenemos solo el PATH necesario. Ansible leerá su CFG de forma nativa al entrar al directorio.
+        // Keep only the required PATH. Ansible will automatically load its configuration (ansible.cfg) when entering the directory.
         PATH = "/opt/jenkins-python-tools/bin:${env.PATH}"
     }
 
@@ -35,14 +35,13 @@ pipeline {
 
                 // 2. Verify structural YAML syntax entering the Ansible folder
                 dir('Ansible') {
-                    sh 'cat ansible.cfg'
                     sh 'ansible-playbook -i inventory.ini site.yaml --syntax-check'
                 }
             }
         }
 
         stage('4. Dry Run (Risk-Free Simulation)') {
-            // OPTIMIZACIÓN: Solo corre la simulación si es un Pull Request o una prueba de rama, no en merges directos a main.
+            // OPTIMIZATION: Run the simulation only for Pull Requests or feature branch builds, not for direct merges into main.
             when {
                 not { branch 'main' }
             }
@@ -50,8 +49,6 @@ pipeline {
                 echo ' Simulating changes on AWS infrastructure (--check --diff)...'
                 sshagent(['ec2-ssh-pem']) {
                     dir('Ansible') {
-                        sh 'ansible --version | grep "config file"'
-                        sh 'cat ansible.cfg'
                         sh 'ansible-playbook -i inventory.ini site.yaml --check --diff'
                     }
                 }
@@ -62,10 +59,8 @@ pipeline {
             steps {
                 echo ' Applying configuration to AWS EC2 servers...'
                 sshagent(['ec2-ssh-pem']) {
-                    // Al entrar a la subcarpeta, Ansible detecta automáticamente el archivo ansible.cfg
+                    // Upon entering the subdirectory, Ansible automatically detects the ansible.cfg file.
                     dir('Ansible') {
-                        sh 'ansible --version | grep "config file"'
-                        sh 'cat ansible.cfg'
                         sh 'ansible-playbook -i inventory.ini site.yaml'
                     }
                 }
