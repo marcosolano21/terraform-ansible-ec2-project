@@ -41,10 +41,7 @@ pipeline {
         }
 
         stage('4. Dry Run (Risk-Free Simulation)') {
-            // OPTIMIZATION: Run the simulation only for Pull Requests or feature branch builds, not for direct merges into main.
-            when {
-                not { branch 'main' }
-            }
+            // Verifies impact before performing them
             steps {
                 echo ' Simulating changes on AWS infrastructure (--check --diff)...'
                 sshagent(['ec2-ssh-pem']) {
