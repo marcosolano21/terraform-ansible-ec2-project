@@ -1,0 +1,106 @@
+pipeline {
+    agent any
+
+    // environment {
+        // Mantenemos solo el PATH necesario. Ansible leerá su CFG de forma nativa al entrar al directorio.
+        //PATH = "/opt/jenkins-python-tools/bin:${env.PATH}"
+   // }
+
+    stages {
+        stage('1. Code Checkout') {
+            steps {
+                echo '========== CHECKOUT =========='
+                git url: 'https://github.com/marcosolano21/terraform-ansible-ec2-project.git', branch: 'main'
+            }
+        }
+
+//        stage('2. DevSecOps') {
+//           steps {
+//                sh '''
+//                    bandit -r Ansible/roles/target_script/files/ -ll -i
+//        
+//                     checkov \
+//                         -d Ansible \
+//                         --framework ansible \
+//                         --compact
+//                 '''
+//             }
+//         }       
+
+        stage('3. Quality Gate (CI: Lint & Syntax)') {
+            steps {
+                echo 'Auditing Python and Ansible code quality...'
+                // 1. Verify that the Python stress script has no syntax errors
+                sh 'python3 -m py_compile Ansible/roles/target_script/files/stress_script.py'
+
+                // 2. Verify structural YAML syntax entering the Ansible folder
+                dir('Ansible') {
+                    sh 'cat ansible.cfg'
+                    sh 'ansible-playbook -i inventory.ini site.yaml --syntax-check'
+                }
+            }
+        }
+
+        stage('4. Dry Run (Risk-Free Simulation)') {
+            // OPTIMIZACIÓN: Solo corre la simulación si es un Pull Request o una prueba de rama, no en merges directos a main.
+            when {
+                not { branch 'main' }
+            }
+            steps {
+                echo ' Simulating changes on AWS infrastructure (--check --diff)...'
+                sshagent(['ec2-ssh-pem']) {
+                    dir('Ansible') {
+                        sh 'ansible --version | grep "config file"'
+                        sh 'cat ansible.cfg'
+                        sh 'ansible-playbook -i inventory.ini site.yaml --check --diff'
+                    }
+                }
+            }
+        }
+
+        stage('5. AWS Deployment (CD)') {
+            steps {
+                echo ' Applying configuration to AWS EC2 servers...'
+                sshagent(['ec2-ssh-pem']) {
+                    // Al entrar a la subcarpeta, Ansible detecta automáticamente el archivo ansible.cfg
+                    dir('Ansible') {
+                        sh 'ansible --version | grep "config file"'
+                        sh 'cat ansible.cfg'
+                        sh 'ansible-playbook -i inventory.ini site.yaml'
+                    }
+                }
+            }
+        }
+
+        stage('6. Smoke Tests (SRE Health Checks)') {
+            steps {
+                echo ' Running post-deployment health checks across the infrastructure...'
+                sshagent(['ec2-ssh-pem']) {
+                    dir('Ansible') {
+                        echo '--- AUDITING TARGET EC2 (Workload Simulator) ---'
+                        sh 'ansible target -i inventory.ini -m command -a "systemctl is-active resource-stress" --become'
+                        
+                        echo '--- AUDITING TELEMETRY ON ALL EC2 INSTANCES ---'
+                        sh 'ansible target -i inventory.ini -m uri -a "url=http://localhost:9100/metrics status_code=200"'
+
+                        echo '--- AUDITING MONITORING EC2 (Prometheus Stack) ---'
+                        sh 'ansible monitoring -i inventory.ini -m uri -a "url=http://localhost:9090/-/healthy status_code=200"'
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            echo ' Cleaning up Jenkins workspace to prevent credential leaking and disk clutter...'
+            cleanWs()
+        }
+        success {
+            echo ' Successful! EC2 instances are updated and all services passed smoke tests.'
+        }
+        failure {
+            echo 'Alert! The pipeline failed. Check Jenkins console logs to audit which stage broke the execution.'
+        }
+    }
+}
