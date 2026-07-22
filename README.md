@@ -117,17 +117,16 @@ PUBLIC-IP ansible_user=ubuntu
 ## CI/CD
 The project also contains a jenkins file for a CI/CD pipeline. The pipeline starts automatically when a change is made on the repository. These are the stages and their description:
 
-* **1. Code Checkout:**Pulls the latest source code from the GitHub repository into the Jenkins workspace to initiate the pipeline.
+* **1. Code Checkout:** Pulls the latest source code from the GitHub repository into the Jenkins workspace to initiate the pipeline.
 
-* **2. DevSecOps (Static Security Analysis):**Runs SAST scans using Bandit (Python) and Checkov (Ansible IaC) to catch security flaws before deployment.
+* **2. DevSecOps (Static Security Analysis):** Runs SAST scans using Bandit (Python) and Checkov (Ansible IaC) to catch security flaws before deployment.
 
-* **3. Quality Gate (CI: Lint & Syntax):**Validates Python script compilation and checks Ansible YAML syntax (--syntax-check) to prevent runtime failures.
+* **3. Quality Gate (CI: Lint & Syntax):** Validates Python script compilation and checks Ansible YAML syntax (--syntax-check) to prevent runtime failures.
 
-* **4. Dry Run (Risk-Free Simulation):**Simulates playbook execution (--check --diff) on AWS in read-only mode to preview changes without modifying servers.
+* **4. Dry Run (Risk-Free Simulation):** Simulates playbook execution (--check --diff) on AWS in read-only mode to preview changes without modifying servers.
 
-* **5. AWS Deployment (CD):**Applies real configurations to EC2 instances over SSH, provisioning packages, Docker, and system services.
+* **5. AWS Deployment (CD):** Applies real configurations to EC2 instances over SSH, provisioning packages, Docker, and system services.
 
-* **6. Smoke Tests (SRE Health Checks):**Audits active systemd service daemons and verifies telemetry endpoints (Node Exporter & Prometheus) return HTTP 200 OK.
-
+* **6. Smoke Tests (SRE Health Checks):** Audits active systemd service daemons and verifies telemetry endpoints (Node Exporter & Prometheus) return HTTP 200 OK.
 
 ---
