@@ -3,8 +3,8 @@ pipeline {
 
      environment {
         // Keep only the required PATH. Ansible will automatically load its configuration (ansible.cfg) when entering the directory.
-        PATH = "/opt/jenkins-python-tools/bin:${env.PATH}"
-        SSH_CREDENTIAL = 'ec2-ssh-pem'
+        PATH = "/opt/jenkins-python-tools/bin:${env.PATH}" // We have to create and activate on our Jenkins server/container a python venv to use pip later, I used this path to create the venv: /opt/jenkins-python-tools
+        SSH_CREDENTIAL = 'Crediantials-for-AWS-access' // Used for SSH access to the EC2 instances
     }
 
     stages {
@@ -15,10 +15,11 @@ pipeline {
             }
         }
 
-        stage('2. DevSecOps') {
+        stage('2. DevSecOps') {     // To run the folowing commands, bandit and checkov must be installed on jenkins server/container, we need to installed them using pip
+                                    // that why we created and activated a phython venv on /opt/jenkins-python-tools
            steps {
                 sh '''
-                    bandit -r Ansible/roles/target_script/files/ -ll -i
+                    bandit -r Ansible/roles/target_script/files/ -ll -i 
         
                      checkov \
                          -d Ansible \
@@ -74,7 +75,7 @@ pipeline {
                 sshagent([env.SSH_CREDENTIAL]) {
                     dir('Ansible') {
                         echo '--- AUDITING TARGET EC2 (Workload Simulator) ---'
-                        sh 'ansible target -i inventory.ini -m command -a "systemctl is-active resource-stress" --become'
+                        sh 'ansible target -i inventory.ini -m command -a "systemctl is-active resource-stress" --become' // resurce-stress is the name of the process we created on the targer EC2
                         
                         echo '--- AUDITING TELEMETRY ON ALL EC2 INSTANCES ---'
                         sh 'ansible target -i inventory.ini -m uri -a "url=http://localhost:9100/metrics status_code=200"'
