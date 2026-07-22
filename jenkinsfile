@@ -1,10 +1,10 @@
 pipeline {
     agent any
 
-    // environment {
+     environment {
         // Mantenemos solo el PATH necesario. Ansible leerá su CFG de forma nativa al entrar al directorio.
-        //PATH = "/opt/jenkins-python-tools/bin:${env.PATH}"
-   // }
+        PATH = "/opt/jenkins-python-tools/bin:${env.PATH}"
+    }
 
     stages {
         stage('1. Code Checkout') {
@@ -14,18 +14,18 @@ pipeline {
             }
         }
 
-//        stage('2. DevSecOps') {
-//           steps {
-//                sh '''
-//                    bandit -r Ansible/roles/target_script/files/ -ll -i
-//        
-//                     checkov \
-//                         -d Ansible \
-//                         --framework ansible \
-//                         --compact
-//                 '''
-//             }
-//         }       
+        stage('2. DevSecOps') {
+           steps {
+                sh '''
+                    bandit -r Ansible/roles/target_script/files/ -ll -i
+        
+                     checkov \
+                         -d Ansible \
+                         --framework ansible \
+                         --compact
+                 '''
+             }
+         }       
 
         stage('3. Quality Gate (CI: Lint & Syntax)') {
             steps {
